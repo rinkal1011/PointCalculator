@@ -1,0 +1,93 @@
+
+import React, { useState, useEffect } from "react";
+
+const API_URL = "https://api.example.com/transactions";
+
+const RewardPointsCalculator = () => {
+  const [transactions, setTransactions] = useState([]);
+  const [rewardPointsPerMonth, setRewardPointsPerMonth] = useState({});
+  const [totalRewardPoints, setTotalRewardPoints] = useState(0);
+
+  useEffect(() => {
+    // Simulate an asynchronous API call to fetch data
+    const fetchTransactions = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        setTransactions(data);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  useEffect(() => {
+    // Calculate reward points per month and total
+    const calculateRewardPoints = () => {
+      const rewardPointsPerMonth = {};
+      let totalRewardPoints = 0;
+
+      transactions.forEach((transaction) => {
+        const amountSpent = transaction.amount;
+        const rewardPoints = calculateRewardPointsForTransaction(amountSpent);
+
+        const month = getMonthFromTransactionDate(transaction.date);
+        if (!rewardPointsPerMonth[month]) {
+          rewardPointsPerMonth[month] = 0;
+        }
+        rewardPointsPerMonth[month] += rewardPoints;
+
+        totalRewardPoints += rewardPoints;
+      });
+
+      setRewardPointsPerMonth(rewardPointsPerMonth);
+      setTotalRewardPoints(totalRewardPoints);
+    };
+
+    calculateRewardPoints();
+  }, [transactions]);
+
+  const calculateRewardPointsForTransaction = (amountSpent) => {
+    let rewardPoints = 0;
+
+    if (amountSpent > 100) {
+      rewardPoints += (amountSpent - 100) * 2;
+    }
+
+    if (amountSpent > 50 && amountSpent <= 100) {
+      rewardPoints += amountSpent - 50;
+    }
+
+    return rewardPoints;
+  };
+
+  const getMonthFromTransactionDate = (date) => {
+    // Implement your logic to extract the month from the transaction date
+    // Example: return date.getMonth() + 1;
+
+    // For simplicity, let's assume the date is in the format "YYYY-MM-DD"
+    return date.split("-")[1];
+  };
+
+  return (
+    <div>
+      <h2>Reward Points Calculator</h2>
+
+      <h3>Reward Points per Month</h3>
+      <ul>
+        {Object.entries(rewardPointsPerMonth).map(([month, rewardPoints]) => (
+          <li key={month}>
+            Month {month}: {rewardPoints} points
+          </li>
+        ))}
+      </ul>
+
+      <h3>Total Reward Points</h3>
+      <p>{totalRewardPoints} points</p>
+    </div>
+  );
+};
+
+export default RewardPointsCalculator
